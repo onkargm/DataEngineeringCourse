@@ -1,0 +1,29 @@
+{
+"transaction_data":
+[
+{
+    "InvoiceNo":8001,
+    "StockCode":456,
+    "Quantity":40,
+    "CustomerID":1001,
+    "InvoiceDate":"04-04-2023",
+    "UnitPrice":233.5
+},
+{
+    "InvoiceNo":"ABC863563",
+    "StockCode":"18768767",
+    "Quantity":"40",
+    "CustomerID":"1002",
+    "InvoiceDate":"04-04-2023",
+    "UnitPrice":"233.5"
+},
+{
+    "InvoiceNo":"9001",
+    "StockCode":"765",
+    "Quantity":"40",
+    "CustomerID":"1003",
+    "InvoiceDate":"04-04-2023",
+    "UnitPrice":"233.5"
+}
+]
+}
