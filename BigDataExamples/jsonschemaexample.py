@@ -67,7 +67,7 @@ if __name__ =='__main__':
     with open("sample_json_data") as json_file:
         data= json.load(json_file)
 
-
+    pprint(data)
     #checking if the json is valid
     print(validate_json(json.dumps(data)))
     #checking if the dictionaries within json are valid

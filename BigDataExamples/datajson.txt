@@ -1,0 +1,39 @@
+[
+{
+"Year":"2012",
+"Industry_aggregation_NZSIOC":"Level 2",
+"Industry_code_NZSIOC":"BA11",
+"Industry_name_NZSIOC":"Cotton and Silk farming",
+"Units":"Dollars (millions)",
+"Variable_code":"H12",
+"Variable_name":"Equipments and others",
+"Variable_category":"Financial performance",
+"Value":"2,970",
+"Industry_code_ANZSIC06":"ANZSIC06 groups B011, B012, and B013"
+},
+{
+"Year":"2012",
+"Industry_aggregation_NZSIOC":"Level 2",
+"Industry_code_NZSIOC":"BA11",
+"Industry_name_NZSIOC":"Cotton and Silk farming",
+"Units":"Dollars (millions)",
+"Variable_code":"H13",
+"Variable_name":"Equipments and others",
+"Variable_category":"Financial performance",
+"Value":"3,770",
+"Industry_code_ANZSIC06":"ANZSIC06 groups B011, B012, and B013"
+},
+{
+"Year":"2012",
+"Industry_aggregation_NZSIOC":"Level 2",
+"Industry_code_NZSIOC":"BA11",
+"Industry_name_NZSIOC":"Cotton and Silk farming",
+"Units":"Dollars (millions)",
+"Variable_code":"H14",
+"Variable_name":"Transportation channels for materials",
+"Variable_category":"Financial performance",
+"Value":"2,500",
+"Industry_code_ANZSIC06":"ANZSIC06 groups B011, B012, and B013"
+}
+]
+
