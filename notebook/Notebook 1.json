@@ -18,15 +18,16 @@
 				"spark.dynamicAllocation.enabled": "true",
 				"spark.dynamicAllocation.minExecutors": "1",
 				"spark.dynamicAllocation.maxExecutors": "3",
-				"spark.autotune.trackingId": "b9dfc0a0-56ff-481d-a909-add99cf246ea"
+				"spark.autotune.trackingId": "cd3098d6-794f-405a-911e-c75a1b451e6b"
 			}
 		},
 		"metadata": {
 			"saveOutput": true,
-			"synapse_widget": {
-				"version": "0.1"
-			},
 			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
 			"language_info": {
 				"name": "python"
 			},
@@ -37,14 +38,13 @@
 				"endpoint": "https://demoserverlesssynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/demosparkpool",
 				"auth": {
 					"type": "AAD",
-					"authResource": "https://dev.azuresynapse.net",
-					"authHeader": null
+					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.5",
 				"nodeCount": 3,
-				"cores": 8,
-				"memory": 56,
-				"extraHeader": null
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": true
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -52,8 +52,55 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"df = spark.sql(\"select * from Database1.rankedmetrics\")\n",
+					"df.show()"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df.columns"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.window import Window\n",
+					"from pyspark.sql.functions import col, desc, row_number"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"outputs_hidden": true
+					}
+				},
+				"source": [
+					"window_spec = Window.partitionBy(\"database\").orderBy(desc(\"cpu_usage\"))\n",
+					"df_with_rank = df.withColumn(\"rank\", row_number().over(window_spec))\n",
+					"second_highest = df_with_rank.filter(col(\"rank\") == 2).drop(\"rank\")\n",
+					"\n",
+					"df_with_rank.show(c)"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df_with_rank.select(\"database\", \"cpu_usage\", \"rank\").orderBy(desc(\"database\")).show()"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"source": [
 					""
-				]
+				],
+				"execution_count": null
 			}
 		]
 	}
