@@ -1,0 +1,624 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "demoserverlesssynapse"
+		},
+		"demoserverlesssynapse-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'demoserverlesssynapse-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:demoserverlesssynapse.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"demoserverlesssynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azuredemostorage007.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/demoserverlesssynapse-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('demoserverlesssynapse-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/demoserverlesssynapse-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('demoserverlesssynapse-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Database1')]",
+			"type": "Microsoft.Synapse/workspaces/databases",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"Ddls": [
+					{
+						"ActionType": "CREATE",
+						"OldEntity": null,
+						"NewEntity": {
+							"Name": "Database1",
+							"EntityType": "DATABASE",
+							"Origin": {
+								"Type": "SPARK"
+							},
+							"Properties": {
+								"IsSyMSCDMDatabase": true
+							},
+							"Source": {
+								"Provider": "ADLS",
+								"Location": "abfss://democontainer@azuredemostorage007.dfs.core.windows.net/Database1",
+								"Properties": {
+									"FormatType": "csv",
+									"LinkedServiceName": "demoserverlesssynapse-WorkspaceDefaultStorage"
+								}
+							},
+							"PublishStatus": "PUBLISHED",
+							"ObjectVersion": 1,
+							"ObjectId": "286705ea-0aac-41b4-8c79-d224eb673787"
+						},
+						"Source": {
+							"Type": "SPARK"
+						}
+					},
+					{
+						"ActionType": "CREATE",
+						"OldEntity": null,
+						"NewEntity": {
+							"Name": "rankedmetrics",
+							"EntityType": "TABLE",
+							"TableType": "EXTERNAL",
+							"Namespace": {
+								"SchemaName": null,
+								"DatabaseName": "Database1",
+								"DatabaseId": null
+							},
+							"StorageDescriptor": {
+								"Distribution": null,
+								"Columns": [
+									{
+										"Name": "database",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "timestamp",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "cpu_usage",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "memory_usage",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "disk_io_read",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "disk_io_write",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "network_io",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "storage_utilization",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "query_execution_time",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "query_throughput",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "transaction_commits",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "transaction_rollbacks",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "cache_hit_ratio",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "connection_count_active",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "connection_count_idle",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "lock_contention_rate",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "thread_pool_usage",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "temp_space_usage",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "index_usage_efficiency",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "deadlocks_detected",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "replication_lag",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "double",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "double"
+											}
+										}
+									},
+									{
+										"Name": "node_health_status",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "cluster_sync_status",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "failover_events",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "integer",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "integer"
+											}
+										}
+									},
+									{
+										"Name": "replica_status",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "string",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 8000,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "string"
+											}
+										}
+									},
+									{
+										"Name": "cpuusagerank",
+										"Description": null,
+										"OriginDataTypeName": {
+											"TypeName": "long",
+											"IsComplexType": false,
+											"IsNullable": true,
+											"Length": 0,
+											"Precision": 0,
+											"Scale": 0,
+											"Properties": {
+												"HIVE_TYPE_STRING": "long"
+											}
+										}
+									}
+								],
+								"ColumnSetEntityName": "947836e8-d354-4d62-825c-f409dc98bd85",
+								"Format": {
+									"InputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+									"OutputFormat": "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat",
+									"FormatType": "parquet",
+									"SerializeLib": "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe",
+									"Properties": {
+										"path": "abfss://democontainer@azuredemostorage007.dfs.core.windows.net/dbobservability/08042025/Output/part-00000-f11b9d46-f18e-42ea-81d0-97939bb0a5ac-c000.snappy.parquet",
+										"FormatTypeSetToDatabaseDefault": false
+									}
+								},
+								"Source": {
+									"Provider": "ADLS",
+									"Location": "abfss://democontainer@azuredemostorage007.dfs.core.windows.net/dbobservability/08042025/Output/part-00000-f11b9d46-f18e-42ea-81d0-97939bb0a5ac-c000.snappy.parquet",
+									"Properties": {
+										"LinkedServiceName": "demoserverlesssynapse-WorkspaceDefaultStorage",
+										"LocationSetToDatabaseDefault": false
+									}
+								},
+								"Properties": {
+									"textinputformat.record.delimiter": ",",
+									"compression": "",
+									"derivedModelAttributeInfo": "{\"attributeReferences\":{}}"
+								},
+								"Compressed": false,
+								"SerDeInfo": null,
+								"IsStoredAsSubdirectories": false
+							},
+							"Owner": null,
+							"CreateTime": 0,
+							"LastAccessTime": 0,
+							"Retention": 0,
+							"Temporary": false,
+							"IsRewriteEnabled": false,
+							"ViewOriginalText": null,
+							"ViewExpandedText": null,
+							"Origin": {
+								"Type": "SPARK"
+							},
+							"OriginObjectId": null,
+							"IsSharedEntity": false,
+							"PublishStatus": "PUBLISHED",
+							"Properties": {
+								"Description": "",
+								"DisplayFolderInfo": "{\"name\":\"Others\",\"colorCode\":\"\"}",
+								"PrimaryKeys": "",
+								"spark.sql.sources.provider": "parquet",
+								"spark.sql.sources.schema.numParts": "1",
+								"spark.sql.sources.schema.part.0": "{\"type\":\"struct\",\"fields\":[{\"name\":\"database\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"timestamp\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"cpu_usage\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"memory_usage\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"disk_io_read\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"disk_io_write\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"network_io\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"storage_utilization\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"query_execution_time\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"query_throughput\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"transaction_commits\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"transaction_rollbacks\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"cache_hit_ratio\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"connection_count_active\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"connection_count_idle\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"lock_contention_rate\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"thread_pool_usage\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"temp_space_usage\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"index_usage_efficiency\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deadlocks_detected\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"replication_lag\",\"type\":\"double\",\"nullable\":true,\"metadata\":{}},{\"name\":\"node_health_status\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"cluster_sync_status\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"failover_events\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{}},{\"name\":\"replica_status\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"cpuusagerank\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]}"
+							},
+							"ObjectVersion": 1,
+							"ObjectId": "dca80944-8356-45b3-a5a1-53812d5a5ed3",
+							"Description": ""
+						},
+						"Source": {
+							"Type": "SPARK"
+						}
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/demosparkpool')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 9,
+					"minNodeCount": 3
+				},
+				"nodeCount": 0,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.5",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": true,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "centralindia"
+		}
+	]
+}
